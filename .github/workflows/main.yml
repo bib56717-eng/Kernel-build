@@ -1,0 +1,24 @@
+name: CI-SM-T116
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-kernel:
+    name: Build Kernel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build
+        uses: dabao1955/kernel_build_action@main
+        with:
+          kernel-url: https://github.com/bib56717-eng/android_kernel_samsung_sc8830
+          kernel-branch: tweaks
+          config: goyavewifi_defconfig
+          arch: arm
+
+          other-gcc32-url: https://github.com/sayedather/arm-eabi-4.8-toolchain.git
+          other-gcc32-branch: master
+          other-gcc64-url: https://github.com/sayedather/arm-eabi-4.8-toolchain.git
+          other-gcc64-branch: master
+          anykernel3: true
