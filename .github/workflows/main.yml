@@ -1,4 +1,4 @@
-name: CI-SM-T116
+name: CI
 
 on:
   workflow_dispatch:
@@ -12,13 +12,12 @@ jobs:
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/bib56717-eng/android_kernel_samsung_sc8830
-          kernel-branch: tweaks
-          config: lineage_goyavewifi_defconfig
-          arch: arm
-
-          other-gcc32-url: https://github.com/sayedather/arm-eabi-4.8-toolchain.git
-          other-gcc32-branch: master
-          other-gcc64-url: https://github.com/sayedather/arm-eabi-4.8-toolchain.git
-          other-gcc64-branch: master
+          kernel-url: https://github.com/bib56717-eng/android_kernel_mediatek_mt6757CD-4.4/tree/4.4.95
+          kernel-branch: 4.4.95
+          config: blackview_defconfig
+          arch: arm64
+          aosp-gcc: true
+          aosp-clang: true
+          android-version: 12
+          aosp-clang-version: r383902
           anykernel3: true
