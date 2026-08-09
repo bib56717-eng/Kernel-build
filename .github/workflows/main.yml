@@ -12,9 +12,9 @@ jobs:
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/ARTEM-x92/android_kernel_alcatel_venice
-          kernel-branch: v4.4.146
-          config: k57pv1_dm_64_defconfig
+          kernel-url: https://github.com/bib56717-eng/android_kernel_mediatek_mt6761-62-4.9
+          kernel-branch: master
+          config: blackview_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
