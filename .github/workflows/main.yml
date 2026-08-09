@@ -17,7 +17,7 @@ jobs:
           config: blackview_defconfig
           arch: arm64
           aosp-gcc: true
-          aosp-clang: false
+          aosp-clang: true
           android-version: 12
           aosp-clang-version: r383902
           anykernel3: true
