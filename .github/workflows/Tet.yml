@@ -132,6 +132,25 @@ jobs:
           echo "Make:"
           make --version | head -n 1
 
+      - name: Fix DrvGen.py Python syntax
+        working-directory: kernel
+        run: |
+          set -e
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("tools/dct/DrvGen.py")
+          text = path.read_text()
+
+          text = text.replace("print '''", "print('''")
+
+          path.write_text(text)
+          PY
+
+          echo "=== DrvGen.py line 42 ==="
+          sed -n '35,50p' tools/dct/DrvGen.py
+          
       - name: Configure kernel
         working-directory: kernel
         shell: bash
