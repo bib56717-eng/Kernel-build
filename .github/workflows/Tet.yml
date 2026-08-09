@@ -93,8 +93,8 @@ jobs:
         run: |
           git clone \
             --depth=1 \
-            -b lineage-15.1 \
-            https://github.com/LCM-MTK/android_kernel_mediatek_mt6757.git \
+            -b master \
+            https://github.com/bib56717-eng/android_kernel_mediatek_mt6757CD-4.4.git \
             kernel
 
       - name: Download AOSP GCC
@@ -132,25 +132,7 @@ jobs:
           echo "Make:"
           make --version | head -n 1
 
-      - name: Fix DrvGen.py Python syntax
-        working-directory: kernel
-        run: |
-          set -e
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("tools/dct/DrvGen.py")
-          text = path.read_text()
-
-          text = text.replace("print '''", "print(''')")
-
-          path.write_text(text)
-          PY
-
-          echo "=== DrvGen.py line 42 ==="
-          sed -n '35,50p' tools/dct/DrvGen.py
-          
+      
       - name: Configure kernel
         working-directory: kernel
         shell: bash
