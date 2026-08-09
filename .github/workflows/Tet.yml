@@ -143,7 +143,7 @@ jobs:
           path = Path("tools/dct/DrvGen.py")
           text = path.read_text()
 
-          text = text.replace("print '''", "print('''")
+          text = text.replace("print '''", "print(''')")
 
           path.write_text(text)
           PY
