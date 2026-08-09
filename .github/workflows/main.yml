@@ -12,9 +12,9 @@ jobs:
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/LCM-MTK/android_kernel_mediatek_mt6757
-          kernel-branch: lineage-15.1
-          config: k57pv1_dm_64_defconfig
+          kernel-url: https://github.com/bib56717-eng/android_kernel_mediatek_mt6757CD-4.4
+          kernel-branch: master
+          config: blackview_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: false
