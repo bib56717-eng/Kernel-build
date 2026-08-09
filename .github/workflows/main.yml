@@ -12,7 +12,7 @@ jobs:
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/bib56717-eng/android_kernel_mediatek_mt6757CD-4.4/tree/4.4.95
+          kernel-url: https://github.com/bib56717-eng/android_kernel_mediatek_mt6757CD-4.4
           kernel-branch: 4.4.95
           config: blackview_defconfig
           arch: arm64
