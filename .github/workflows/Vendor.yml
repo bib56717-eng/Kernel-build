@@ -240,7 +240,15 @@ jobs:
       # ==========================================
       # BUILD VENDOR IMAGE
       # ==========================================
+      - name: Configure swap
+        run: |
+         sudo fallocate -l 8G /swapfile
+         sudo chmod 600 /swapfile
+         sudo mkswap /swapfile
+         sudo swapon /swapfile
 
+         free -h
+    
       - name: Build vendor.img
         run: |
           cd "$BUILD_DIR"
