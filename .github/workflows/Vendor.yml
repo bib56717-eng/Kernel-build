@@ -1,7 +1,7 @@
 name: Build LineageOS 22.2 Vendor (daisy)
 
 on:
-  workflow_dispatch: # Запуск вручну через вкладку Actions у GitHub
+  workflow_dispatch:
 
 jobs:
   build-vendor:
@@ -29,10 +29,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
-            git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev \
+            git git-lfs gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev \
             liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 \
             libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev \
             python-is-python3 repo
+          git lfs install
 
       - name: Configure Git
         run: |
@@ -42,7 +43,7 @@ jobs:
       - name: Initialize LineageOS 22.2 source
         run: |
           cd /mnt/lineage
-          repo init -u https://github.com -b lineage-22.2 --depth=1 --git-lfs
+          yes | repo init -u https://github.com -b lineage-22.2 --depth=1
 
       - name: Create local manifest for daisy
         run: |
@@ -50,8 +51,8 @@ jobs:
           cat << 'EOF' > /mnt/lineage/.repo/local_manifests/daisy.xml
           <?xml version="1.0" encoding="UTF-8"?>
           <manifest>
-            <remote name="ximi" fetch="https://github.com/ximi-daisy" />
-            <remote name="bib" fetch="https://github.com/bib56717-eng" />
+            <remote name="ximi" fetch="https://github.com" />
+            <remote name="bib" fetch="https://github.com" />
 
             <!-- Device trees -->
             <project path="device/xiaomi/daisy" name="android_device_xiaomi_daisy" remote="ximi" revision="lineage-22.2" />
@@ -60,22 +61,27 @@ jobs:
             <!-- Kernel -->
             <project path="kernel/xiaomi/msm8953" name="android_kernel_xiaomi_msm8953" remote="ximi" revision="lineage-22.2-base" />
 
+            <!-- Hardware -->
+            <project path="hardware/xiaomi" name="LineageOS/android_hardware_xiaomi" remote="github" revision="lineage-22.2" />
+
             <!-- Vendor blobs -->
             <project path="vendor/xiaomi/daisy" name="proprietary_vendor_xiaomi_daisy" remote="ximi" revision="lineage-22.2" />
             <project path="vendor/xiaomi/msm8953-common" name="proprietary_vendor_xiaomi_msm8953-common" remote="bib" revision="lineage-22.2" />
           </manifest>
           EOF
 
-      - name: Sync repositories
+      - name: Sync repositories & clean git objects
         run: |
           cd /mnt/lineage
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          rm -rf .repo
+          df -h
 
       - name: Build vendor.img
         run: |
           cd /mnt/lineage
           source build/envsetup.sh
-          breakfast daisy
+          lunch lineage_daisy-bp1a-userdebug || breakfast daisy
           m vendorimage
 
       - name: Upload vendor.img artifact
@@ -83,4 +89,3 @@ jobs:
         with:
           name: vendor-daisy-lineage22.2
           path: /mnt/lineage/out/target/product/daisy/vendor.img
-          
