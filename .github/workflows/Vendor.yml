@@ -255,7 +255,7 @@ jobs:
 
           echo "Starting vendor image compilation..."
 
-          m vendorimage -j$(nproc --all)
+          m vendorimage -j2
 
       # ==========================================
       # VERIFY OUTPUT
