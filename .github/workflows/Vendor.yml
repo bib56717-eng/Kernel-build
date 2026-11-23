@@ -1,14 +1,26 @@
+
 name: Build LineageOS 22.2 Vendor (daisy)
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-vendor:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
 
+    env:
+      BUILD_DIR: /mnt/lineage
+      DEVICE: daisy
+
     steps:
+      # ==========================================
+      # FREE DISK SPACE
+      # ==========================================
+
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -19,72 +31,267 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      - name: Setup build directory on /mnt
+      # ==========================================
+      # SETUP BUILD ENVIRONMENT
+      # ==========================================
+
+      - name: Setup build directory
         run: |
-          sudo mkdir -p /mnt/lineage
-          sudo chown -R $USER:$USER /mnt/lineage
+          sudo mkdir -p "$BUILD_DIR"
+          sudo chown -R "$USER:$USER" "$BUILD_DIR"
+
           df -h
 
-      - name: Install build packages
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
-            git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev \
-            liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 \
-            libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev \
-            python-is-python3 repo
+
+          sudo apt-get install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            curl \
+            flex \
+            g++-multilib \
+            gcc-multilib \
+            git \
+            git-lfs \
+            gnupg \
+            gperf \
+            imagemagick \
+            lib32ncurses5-dev \
+            lib32readline-dev \
+            lib32z1-dev \
+            liblz4-tool \
+            libncurses5 \
+            libncurses5-dev \
+            libsdl1.2-dev \
+            libssl-dev \
+            libxml2 \
+            libxml2-utils \
+            lzop \
+            pngcrush \
+            rsync \
+            schedtool \
+            squashfs-tools \
+            xsltproc \
+            zip \
+            zlib1g-dev \
+            python-is-python3 \
+            repo
+
+      # ==========================================
+      # GIT CONFIGURATION
+      # ==========================================
 
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Initialize LineageOS 22.2 source
-        run: |
-          cd /mnt/lineage
-          yes | repo init -u https://github.com/LineageOS/android.git -b lineage-22.2 --depth=1 --no-clone-bundle
+      # ==========================================
+      # INITIALIZE LINEAGEOS
+      # ==========================================
 
-      - name: Create local manifest for daisy
+      - name: Initialize LineageOS 22.2
         run: |
-          mkdir -p /mnt/lineage/.repo/local_manifests
-          cat << 'EOF' > /mnt/lineage/.repo/local_manifests/daisy.xml
+          cd "$BUILD_DIR"
+
+          repo init \
+            -u https://github.com/LineageOS/android.git \
+            -b lineage-22.2 \
+            --depth=1 \
+            --no-clone-bundle
+
+      # ==========================================
+      # LOCAL MANIFEST
+      # ==========================================
+
+      - name: Create daisy local manifest
+        run: |
+          mkdir -p "$BUILD_DIR/.repo/local_manifests"
+
+          cat > "$BUILD_DIR/.repo/local_manifests/daisy.xml" <<'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <manifest>
-            <remote name="ximi" fetch="https://github.com" />
-            <remote name="bib" fetch="https://github.com" />
 
-            <!-- Device trees -->
-            <project path="device/xiaomi/daisy" name="android_device_xiaomi_daisy" remote="ximi" revision="lineage-22.2" />
-            <project path="device/xiaomi/msm8953-common" name="android_device_xiaomi_msm8953-common" remote="ximi" revision="lineage-22.2" />
+              <!-- XIMI DAISY REPOSITORIES -->
+              <remote
+                  name="ximi"
+                  fetch="https://github.com"
+              />
 
-            <!-- Kernel -->
-            <project path="kernel/xiaomi/msm8953" name="android_kernel_xiaomi_msm8953" remote="ximi" revision="lineage-22.2-base" />
+              <!-- BIB56717-ENG REPOSITORIES -->
+              <remote
+                  name="bib"
+                  fetch="https://github.com"
+              />
 
-            <!-- Hardware -->
-            <project path="hardware/xiaomi" name="LineageOS/android_hardware_xiaomi" remote="github" revision="lineage-22.2" />
+              <!-- DEVICE TREE -->
+              <project
+                  path="device/xiaomi/daisy"
+                  name="ximi-daisy/android_device_xiaomi_daisy"
+                  remote="ximi"
+                  revision="lineage-22.2"
+              />
 
-            <!-- Vendor blobs -->
-            <project path="vendor/xiaomi/daisy" name="proprietary_vendor_xiaomi_daisy" remote="ximi" revision="lineage-22.2" />
-            <project path="vendor/xiaomi/msm8953-common" name="proprietary_vendor_xiaomi_msm8953-common" remote="bib" revision="lineage-22.2" />
+              <!-- MSM8953 COMMON DEVICE TREE -->
+              <project
+                  path="device/xiaomi/msm8953-common"
+                  name="ximi-daisy/android_device_xiaomi_msm8953-common"
+                  remote="ximi"
+                  revision="lineage-22.2"
+              />
+
+              <!-- KERNEL -->
+              <project
+                  path="kernel/xiaomi/msm8953"
+                  name="ximi-daisy/android_kernel_xiaomi_msm8953"
+                  remote="ximi"
+                  revision="lineage-22.2-base"
+              />
+
+              <!-- DAISY VENDOR BLOBS -->
+              <project
+                  path="vendor/xiaomi/daisy"
+                  name="ximi-daisy/proprietary_vendor_xiaomi_daisy"
+                  remote="ximi"
+                  revision="lineage-22.2"
+              />
+
+              <!-- MSM8953 COMMON VENDOR BLOBS -->
+              <project
+                  path="vendor/xiaomi/msm8953-common"
+                  name="bib56717-eng/proprietary_vendor_xiaomi_msm8953-common"
+                  remote="bib"
+                  revision="lineage-22.2"
+              />
+
           </manifest>
           EOF
 
-      - name: Sync repositories & clean git objects
+      # ==========================================
+      # SYNC SOURCES
+      # ==========================================
+
+      - name: Sync LineageOS sources
         run: |
-          cd /mnt/lineage
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
-          rm -rf .repo
-          df -h
+          cd "$BUILD_DIR"
+
+          repo sync \
+            -c \
+            -j$(nproc --all) \
+            --force-sync \
+            --no-clone-bundle \
+            --no-tags \
+            --fail-fast
+
+      # ==========================================
+      # VERIFY SOURCES
+      # ==========================================
+
+      - name: Verify source repositories
+        run: |
+          cd "$BUILD_DIR"
+
+          echo "Checking device tree..."
+          test -d device/xiaomi/daisy
+
+          echo "Checking common device tree..."
+          test -d device/xiaomi/msm8953-common
+
+          echo "Checking kernel..."
+          test -d kernel/xiaomi/msm8953
+
+          echo "Checking daisy vendor..."
+          test -d vendor/xiaomi/daisy
+
+          echo "Checking common vendor..."
+          test -d vendor/xiaomi/msm8953-common
+
+          echo "Checking device configuration..."
+          find device/xiaomi/daisy -maxdepth 2 \
+            -type f \( -name "AndroidProducts.mk" -o -name "BoardConfig.mk" \)
+
+          echo "All required source directories exist."
+
+      # ==========================================
+      # BUILD CONFIGURATION
+      # ==========================================
+
+      - name: Configure build environment
+        run: |
+          cd "$BUILD_DIR"
+
+          source build/envsetup.sh
+
+          echo "Preparing daisy build..."
+
+          if lunch lineage_daisy-bp1a-userdebug; then
+            echo "Using lineage_daisy-bp1a-userdebug"
+          elif breakfast daisy; then
+            echo "Using breakfast daisy"
+          else
+            echo "ERROR: Unable to configure daisy build!"
+            exit 1
+          fi
+
+      # ==========================================
+      # BUILD VENDOR IMAGE
+      # ==========================================
 
       - name: Build vendor.img
         run: |
-          cd /mnt/lineage
-          source build/envsetup.sh
-          lunch lineage_daisy-bp1a-userdebug || breakfast daisy
-          m vendorimage
+          cd "$BUILD_DIR"
 
-      - name: Upload vendor.img artifact
+          source build/envsetup.sh
+
+          if lunch lineage_daisy-bp1a-userdebug; then
+            :
+          else
+            breakfast daisy
+          fi
+
+          echo "Starting vendor image compilation..."
+
+          m vendorimage -j$(nproc --all)
+
+      # ==========================================
+      # VERIFY OUTPUT
+      # ==========================================
+
+      - name: Verify vendor.img
+        run: |
+          cd "$BUILD_DIR"
+
+          VENDOR_IMG="out/target/product/daisy/vendor.img"
+
+          if [ ! -f "$VENDOR_IMG" ]; then
+            echo "ERROR: vendor.img was not generated!"
+            echo "Searching output directory..."
+
+            find out/target/product/daisy \
+              -maxdepth 2 -name "vendor*" -type f || true
+
+            exit 1
+          fi
+
+          echo "Vendor image successfully built!"
+
+          ls -lh "$VENDOR_IMG"
+
+          sha256sum "$VENDOR_IMG"
+
+      # ==========================================
+      # UPLOAD ARTIFACT
+      # ==========================================
+
+      - name: Upload vendor.img
         uses: actions/upload-artifact@v4
         with:
-          name: vendor-daisy-lineage22.2
+          name: vendor-daisy-lineage-22.2
           path: /mnt/lineage/out/target/product/daisy/vendor.img
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
