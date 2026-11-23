@@ -43,7 +43,7 @@ jobs:
       - name: Initialize LineageOS 22.2 source
         run: |
           cd /mnt/lineage
-          yes | repo init -u https://github.com -b lineage-22.2 --depth=1
+          yes | repo init -u https://github.com/LineageOS/android.git -b lineage-22.2 --depth=1 --git-lfs --no-clone-bundle 
 
       - name: Create local manifest for daisy
         run: |
